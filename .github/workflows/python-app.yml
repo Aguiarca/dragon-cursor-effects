@@ -1,0 +1,63 @@
+            - nome: Configurar ambiente Node.js
+  usos: ações/setup-node@v3.9.1
+  com:
+    # Defina always-auth em npmrc.
+    always-auth: # opcional, o padrão é falso
+    # Versão: Especificação da versão a ser usada. Exemplos: 12.x, 10.15.1, >=10.15.0.
+    node-version: # opcional
+    # Arquivo contendo a especificação da versão a ser usada. Exemplos: .nvmrc, .node-version, .tool-versions.
+    node-version-file: # opcional
+    # Arquitetura de destino para uso do Node. Exemplos: x86, x64. Usará a arquitetura do sistema por padrão.
+    arquitetura: # opcional
+    # Defina esta opção se quiser que a ação verifique a versão mais recente disponível que satisfaça a especificação da versão.
+    check-latest: # opcional
+    # Registro opcional para configurar a autenticação. Definirá o registro em um arquivo .npmrc e .yarnrc no nível do projeto e configurará a autenticação para ler de env.NODE_AUTH_TOKEN.
+    registry-url: # opcional
+    # Escopo opcional para autenticação em registros com escopo. Retornará ao proprietário do repositório ao usar o registro de Pacotes do GitHub (https://npm.pkg.github.com/).
+    escopo: # opcional
+    # Usado para extrair distribuições de nós de versões de nós. Como há um padrão, ele normalmente não é fornecido pelo usuário. Ao executar esta ação em github.com, o valor padrão é suficiente. Ao executar em GHES, você pode passar um token de acesso pessoal para github.com se estiver enfrentando limitação de taxa.
+    token: # opcional, o padrão é ${{ github.server_url == 'https://github.com' && github.token || '' }}
+    # Usado para especificar um gerenciador de pacotes para armazenamento em cache no diretório padrão. Valores suportados: npm, yarn, pnpm.
+    cache: # opcional
+    # Usado para especificar o caminho para um arquivo de dependência: package-lock.json, yarn.lock, etc. Suporta curingas ou uma lista de nomes de arquivo para armazenar em cache várias dependências.
+    cache-dependency-path: # opcional
+          
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Python application
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Test with pytest
+      run: |
+        pytest
